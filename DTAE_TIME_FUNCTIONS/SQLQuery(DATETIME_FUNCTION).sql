@@ -258,5 +258,147 @@ WHERE O.CustomerID IS NULL;
 
 -- SORT THE RESULT FROM LOWEST TO HIGHEST
 
+SELECT Category,
+SUM(Sales) AS TOTAL_SALES
+FROM(
+	SELECT
+	OrderID,Sales,
+	CASE 
+		WHEN Sales > 50 THEN 'HIGH'
+		WHEN Sales > 20 THEN 'MEDIUM'
+		ELSE 'LOW'
+	END Category
+	FROM Sales.Orders
+	)T
+GROUP BY Category
+ORDER BY SUM(Sales);
+
+
+-- RETRIEVE EMPLOYEE DETAILS WITH GENDER DISPLAYED AS FULL TEXT
+
+SELECT * FROM Sales.Employees
+
+SELECT 
+EmployeeID,
+FirstName,LastName,
+Department,Gender,
+CASE
+	WHEN Gender = 'M' THEN 'MALE'
+	WHEN Gender = 'F' THEN 'FEMALE'
+	ELSE 'NOT AVAILABLE'
+END GENDER_FULL_TEXT
+FROM Sales.Employees;
+
+
+-- RETRIEVE CUSTOMER DETAILS WITH ABBREVIATED COUNTRY CODE
+
+SELECT DISTINCT Country
+FROM Sales.Customers;
+
+SELECT 
+	CustomerID,
+	FirstName,
+	LastName,
+	Country,
+	CASE 
+		WHEN Country = 'Germany' THEN 'DE'
+		WHEN Country = 'USA' THEN 'US'
+		ELSE 'N/A'
+	END Country_Abbreviation
+FROM Sales.Customers
+
+---- QUICK FORM OF CASE STATEMENTS ------
+
+SELECT 
+	CustomerID,
+	FirstName,
+	LastName,
+	Country,
+	CASE Country
+		WHEN 'Germany' THEN 'DE'
+		WHEN 'USA' THEN 'US'
+		ELSE 'N/A'
+	END Country_Abbreviation
+FROM Sales.Customers
+
+
+-- Find the average score of customers and treat null as 0
+-- Additionally provide details such as customerID,  first and lastnmae
+
+SELECT 
+	CustomerID,
+	FirstName,
+	LastName,
+	Score,
+	CASE 
+		WHEN Score IS NULL THEN 0
+		ELSE Score
+	END Clean_Score,
+	AVG(
+	CASE 
+		WHEN Score IS NULL THEN 0
+		ELSE Score
+	END) OVER() Avg_Clean_Score,
+	AVG(Score) OVER() AVG_Score
+FROM Sales.Customers
+
+
+-- COUNT HOW MANY TIME EACH CUSTOMER HAS MADE AN ODER WITH SALES GREATER THAN 30
+
+SELECT  * FROM Sales.Orders
+
+SELECT
+	CustomerID,
+	SUM(CASE 
+		WHEN Sales > 30 THEN 1
+		ELSE 0
+	END )N0_OF_ORDERS_GREATER_30,
+	COUNT(*) Total_no_orders_by_each_customer
+FROM Sales.Orders
+GROUP BY CustomerID
+
+
+---------------------  AGGREGATE FUNCTIONS  ---------------
+
+-- # FIND TOTAL NO OF ODERS
+-- THE TOTAL SALES, AVERAGE SALES FROM ALL ORDERS
+-- THE HIGHEST AND LOWEST SALES OF ALL ORDERS
 
 SELECT * FROM Sales.Orders
+
+
+SELECT
+Count(*) AS TOTAL_NO_OF_ORDERS,
+SUM(Sales) AS TOTAL_SALES,
+AVG(Sales) AS AVG_SALES,
+MAX(Sales) AS HIGHEST_SALE,
+MIN(Sales) AS LOWEST_SALE
+FROM Sales.Orders
+
+-- GROUPING BASED ON CUSTOMER
+--- MORE DETAILED
+
+SELECT
+CustomerID,
+Count(*) AS TOTAL_NO_OF_ORDERS,
+SUM(Sales) AS TOTAL_SALES,
+AVG(Sales) AS AVG_SALES,
+MAX(Sales) AS HIGHEST_SALE,
+MIN(Sales) AS LOWEST_SALE
+FROM Sales.Orders
+GROUP by  CustomerID
+
+-- ANALYZE THE SCORES IN CUSTOMER TABLE
+
+SELECT * FROM Sales.Customers
+
+SELECT
+CustomerID,
+--SUM(COALESCE(Score, 0)) AS Clean_score,
+Count(*) AS TOTAL_NO_OF_ORDERS,
+SUM(COALESCE(Score, 0)) AS TOTAL_SALES,
+AVG(COALESCE(Score, 0)) AS AVG_SALES,
+MAX(COALESCE(Score, 0)) AS HIGHEST_SALE,
+MIN(COALESCE(Score, 0)) AS LOWEST_SALE
+FROM Sales.Customers
+GROUP by CustomerID
